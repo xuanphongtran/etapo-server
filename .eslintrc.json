@@ -1,0 +1,36 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "extends": ["eslint:recommended"],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+
+  "rules": {
+    "no-multiple-empty-lines": ["warn", { "max": 1, "maxEOF": 0 }],
+    "no-trailing-spaces": "warn",
+    "semi": ["error", "never"],
+    "quotes": ["error", "single"],
+    "no-unused-vars":"warn",
+    "indent": [
+      "warn",
+      4,
+      {
+        "SwitchCase": 1,
+        "FunctionDeclaration": {
+          "body": 1,
+          "parameters": 2
+        }
+      }
+    ]
+  }
+}
