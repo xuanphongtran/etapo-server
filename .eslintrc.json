@@ -20,10 +20,10 @@
     "no-trailing-spaces": "warn",
     "semi": ["error", "never"],
     "quotes": ["error", "single"],
-    "no-unused-vars":"warn",
+    "no-unused-vars": "warn",
     "indent": [
       "warn",
-      4,
+      2,
       {
         "SwitchCase": 1,
         "FunctionDeclaration": {

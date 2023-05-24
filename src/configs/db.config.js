@@ -1,27 +1,32 @@
 import mongoose from 'mongoose'
+//data imports
+import { dataUser, dataProduct, dataProductStat, dataTransaction } from '../data/index.js'
+// import User from '../models/User.js'
+// import Product from '../models/Product.js'
+// import ProductStat from '../models/ProductStat.js'
+// import Transaction from '../models/Transaction.js'
 
 const connectDatabase = () => {
-    const mongoDbUrl = `mongodb://${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}`
-    console.log(`Connecting to ${mongoDbUrl}`)
-    // Connecting to the database
-    mongoose
-        .connect(mongoDbUrl, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
+  console.log('Connecting to database')
+  // Connecting to the database
+  mongoose
+    .connect(process.env.MONGO_CLOUD_URL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
 
-    // .connect('mongodb+srv://phongbvb:Adud3lWqHw6Cy3qD@potaxu01.ypzigil.mongodb.net/?retryWrites=true&w=majority',
-    //     {
-    //         useNewUrlParser: true,
-    //         useUnifiedTopology: true,
-    //     })
-        .then(() => {
-            console.log('Successfully connected to the database')
-        })
-        .catch((err) => {
-            console.log(`Could not connect to the database. Exiting now...\n${err}`)
-            process.exit()
-        })
+    .then(() => {
+      //only add data one time
+      // User.insertMany(dataUser)
+      // Product.insertMany(dataProduct)
+      // ProductStat.insertMany(dataProductStat)
+      // Transaction.insertMany(dataTransaction)
+      console.log('Successfully connected to the database')
+    })
+    .catch((err) => {
+      console.log(`Could not connect to the database. Exiting now...\n${err}`)
+      process.exit()
+    })
 }
 
 export default connectDatabase
