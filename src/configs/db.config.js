@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 //data imports
-import { dataUser, dataProduct, dataProductStat, dataTransaction } from '../data/index.js'
+// import { dataUser, dataProduct, dataProductStat, dataTransaction } from '../data/index.js'
 // import User from '../models/User.js'
 // import Product from '../models/Product.js'
 // import ProductStat from '../models/ProductStat.js'
