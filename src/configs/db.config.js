@@ -1,10 +1,17 @@
 import mongoose from 'mongoose'
 //data imports
-// import { dataUser, dataProduct, dataProductStat, dataTransaction } from '../data/index.js'
+// import {
+//   dataUser,
+//   dataProduct,
+//   dataProductStat,
+//   dataTransaction,
+//   dataOverallStat,
+// } from '../data/index.js'
 // import User from '../models/User.js'
 // import Product from '../models/Product.js'
 // import ProductStat from '../models/ProductStat.js'
 // import Transaction from '../models/Transaction.js'
+import OverallStat from '../models/OverallStat.js'
 
 const connectDatabase = () => {
   console.log('Connecting to database')
@@ -21,6 +28,7 @@ const connectDatabase = () => {
       // Product.insertMany(dataProduct)
       // ProductStat.insertMany(dataProductStat)
       // Transaction.insertMany(dataTransaction)
+      // OverallStat.insertMany(dataOverallStat)
       console.log('Successfully connected to the database')
     })
     .catch((err) => {
