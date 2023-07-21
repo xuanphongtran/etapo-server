@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 import User from '../models/User.js'
-import Transaction from '../models/Transaction.js'
+import Order from '../models/Order.js'
 
 export const getAdmins = async (req, res) => {
   try {
@@ -28,14 +28,14 @@ export const getUserPerformance = async (req, res) => {
       { $unwind: '$affiliateStats' },
     ])
 
-    const saleTransactions = await Promise.all(
+    const saleOrders = await Promise.all(
       userWithStats[0].affiliateStats.affiliateSales.map((id) => {
-        return Transaction.findById(id)
+        return Order.findById(id)
       }),
     )
-    const filteredSaleTransactions = saleTransactions.filter((transaction) => transaction !== null)
+    const filteredSaleOrders = saleOrders.filter((order) => order !== null)
 
-    res.status(200).json({ user: userWithStats[0], sales: filteredSaleTransactions })
+    res.status(200).json({ user: userWithStats[0], sales: filteredSaleOrders })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }

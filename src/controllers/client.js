@@ -1,23 +1,22 @@
-import Product from '../models/Product.js'
-import ProductStat from '../models/Product.js'
 import User from '../models/User.js'
-import Transaction from '../models/Transaction.js'
+import Order from '../models/Order.js'
 import getCountryIso3 from 'country-iso-2-to-3'
+import Category from '../models/Category.js'
 
-export const getProducts = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
-    const product = await Product.find()
+    const categories = await Category.find()
 
-    const productWithStats = await Promise.all(
-      product.map(async (product) => {
-        const stat = await ProductStat.find({ productId: product._id })
-        return {
-          ...product._doc,
-          stat,
-        }
-      }),
-    )
-    res.status(200).json(productWithStats)
+    res.status(200).json(categories)
+  } catch (error) {
+    res.status(404).json({ message: error.message })
+  }
+}
+export const getCategoryById = async (req, res) => {
+  try {
+    const categories = await Category.find()
+
+    res.status(200).json(categories)
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
@@ -45,7 +44,7 @@ export const getTransactions = async (req, res) => {
       return sortFormatted
     }
     const sortFormatted = sort ? generalSort() : {}
-    const transactions = await Transaction.find({
+    const orders = await Order.find({
       $or: [
         { cost: { $regex: new RegExp(search, 'i') } },
         { userId: { $regex: new RegExp(search, 'i') } },
@@ -55,9 +54,9 @@ export const getTransactions = async (req, res) => {
       .skip(page * pageSize)
       .limit(pageSize)
 
-    const total = await Transaction.countDocuments({ name: { $regex: search, $options: 'i' } })
+    const total = await Order.countDocuments({ name: { $regex: search, $options: 'i' } })
 
-    res.status(200).json({ transactions, total })
+    res.status(200).json({ orders, total })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
