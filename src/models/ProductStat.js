@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const productStatSchema = new mongoose.Schema(
   {
-    productId: String,
+    productId: { type: mongoose.Types.ObjectId, ref: 'Product' },
     yearlySalesTotal: Number,
     yearlyTotalSoldUnits: Number,
     year: Number,

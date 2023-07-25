@@ -62,7 +62,11 @@ export const updateProduct = async (req, res) => {
       discount,
       category,
     })
-    res.status(200).json(update)
+    if (!update) {
+      return res.status(404).json({ message: `cannot find any category with ID ${id}` })
+    }
+    const updatedProduct = await Product.findById(id)
+    res.status(200).json({ message: 'Success', updatedProduct })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }

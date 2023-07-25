@@ -3,7 +3,6 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 import helmet from 'helmet'
 import bodyParser from 'body-parser'
-import mongoose from 'mongoose'
 import morgan from 'morgan'
 
 import connectDatabase from './src/configs/db.config.js'

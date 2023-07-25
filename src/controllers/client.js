@@ -5,22 +5,61 @@ import Category from '../models/Category.js'
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find()
+    const categories = await Category.find().populate('parent')
 
     res.status(200).json(categories)
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
 }
-export const getCategoryById = async (req, res) => {
+export const createCategories = async (req, res) => {
   try {
-    const categories = await Category.find()
+    const { name, parent, properties } = req.body
 
-    res.status(200).json(categories)
+    const newCategoty = new Category({
+      name,
+      parent,
+      properties,
+    })
+
+    await newCategoty.save()
+
+    res.status(200).json({ message: 'Success', newCategoty })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
 }
+export const updateCategories = async (req, res) => {
+  try {
+    const { id } = req.params
+    const update = await Category.findByIdAndUpdate(id, req.body)
+    if (!update) {
+      return res.status(404).json({ message: `Cannot find any category with ID ${id}` })
+    }
+    const updatedCategory = await Category.findById(id)
+    res.status(200).json({ message: 'Success', updatedCategory })
+  } catch (error) {
+    res.status(404).json({ message: error.message })
+  }
+}
+export const deleteCategories = async (req, res) => {
+  try {
+    const { id } = req.params
+    await Category.findByIdAndRemove(id)
+    res.status(200).send('Success')
+  } catch (error) {
+    res.status(404).json({ message: error.message })
+  }
+}
+// export const getCategoryById = async (req, res) => {
+//   try {
+//     const categories = await Category.find()
+
+//     res.status(200).json(categories)
+//   } catch (error) {
+//     res.status(404).json({ message: error.message })
+//   }
+// }
 
 export const getCustomers = async (req, res) => {
   try {
@@ -32,7 +71,7 @@ export const getCustomers = async (req, res) => {
   }
 }
 
-export const getTransactions = async (req, res) => {
+export const getOrders = async (req, res) => {
   try {
     const { page = 1, pageSize = 20, sort = null, search = '' } = req.query
 
