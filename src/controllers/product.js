@@ -21,7 +21,7 @@ export const getProducts = async (req, res) => {
 }
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, description, images, discount, category, properties } = req.body
+    const { name, price, description, images, discount, category, properties, gender } = req.body
 
     const newProduct = new Product({
       name,
@@ -31,6 +31,7 @@ export const createProduct = async (req, res) => {
       category,
       properties,
       images,
+      gender,
     })
 
     await newProduct.save()
@@ -51,7 +52,7 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params
-    const { name, price, images, description, properties, category, discount } = req.body
+    const { name, price, images, description, properties, category, discount, gender } = req.body
 
     const update = await Product.findByIdAndUpdate(id, {
       name,
@@ -61,6 +62,7 @@ export const updateProduct = async (req, res) => {
       properties,
       discount,
       category,
+      gender,
     })
     if (!update) {
       return res.status(404).json({ message: `cannot find any category with ID ${id}` })
