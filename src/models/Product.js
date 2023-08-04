@@ -9,7 +9,10 @@ const productSchema = new mongoose.Schema(
     category: String,
     rating: Number,
     discount: Number,
-    properites: { type: String },
+    gender: Number,
+    tag: String,
+    delFlag: Boolean,
+    properties: { type: Object },
   },
   { timestamps: true },
 )

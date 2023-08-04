@@ -5,7 +5,7 @@ import Category from '../models/Category.js'
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find().populate('parent')
+    const categories = await Category.find()
 
     res.status(200).json(categories)
   } catch (error) {
@@ -14,11 +14,10 @@ export const getCategories = async (req, res) => {
 }
 export const createCategories = async (req, res) => {
   try {
-    const { name, parent, properties } = req.body
+    const { name, properties } = req.body
 
     const newCategoty = new Category({
       name,
-      parent,
       properties,
     })
 
@@ -26,7 +25,7 @@ export const createCategories = async (req, res) => {
 
     res.status(200).json({ message: 'Success', newCategoty })
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 export const updateCategories = async (req, res) => {
@@ -39,7 +38,7 @@ export const updateCategories = async (req, res) => {
     const updatedCategory = await Category.findById(id)
     res.status(200).json({ message: 'Success', updatedCategory })
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 export const deleteCategories = async (req, res) => {
@@ -48,7 +47,7 @@ export const deleteCategories = async (req, res) => {
     await Category.findByIdAndRemove(id)
     res.status(200).send('Success')
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 // export const getCategoryById = async (req, res) => {
@@ -67,7 +66,7 @@ export const getCustomers = async (req, res) => {
 
     res.status(200).json(customers)
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 
@@ -97,7 +96,7 @@ export const getOrders = async (req, res) => {
 
     res.status(200).json({ orders, total })
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 
@@ -120,6 +119,6 @@ export const getGeography = async (req, res) => {
 
     res.status(200).json(formattedLocation)
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }

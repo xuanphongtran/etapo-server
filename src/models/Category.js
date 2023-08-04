@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 const categorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    parent: { type: mongoose.Types.ObjectId, ref: 'Category' },
-    properties: [{ type: Object }],
+    // parent: { type: mongoose.Types.ObjectId, ref: 'Category' },
+    properties: [{ type: String }],
   },
   {
     timestamps: true,
