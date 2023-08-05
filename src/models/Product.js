@@ -12,7 +12,11 @@ const productSchema = new mongoose.Schema(
     gender: Number,
     tag: String,
     delFlag: Boolean,
+<<<<<<< HEAD
     properties: [{ type: Object }],
+=======
+    properties: { type: Object },
+>>>>>>> 1404ca947dbef0b3e2b96da6340c691d26a8cd2f
   },
   { timestamps: true },
 )
