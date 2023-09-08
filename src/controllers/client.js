@@ -2,6 +2,7 @@ import User from '../models/User.js'
 import Order from '../models/Order.js'
 import getCountryIso3 from 'country-iso-2-to-3'
 import Category from '../models/Category.js'
+import Brand from '../models/Brand.js'
 
 export const getCategories = async (req, res) => {
   try {
@@ -14,11 +15,11 @@ export const getCategories = async (req, res) => {
 }
 export const createCategories = async (req, res) => {
   try {
-    const { name, properties } = req.body
+    const { name, parent } = req.body
 
     const newCategoty = new Category({
       name,
-      properties,
+      parent,
     })
 
     await newCategoty.save()
@@ -59,7 +60,52 @@ export const deleteCategories = async (req, res) => {
 //     res.status(404).json({ message: error.message })
 //   }
 // }
+export const getBrands = async (req, res) => {
+  try {
+    const brands = await Brand.find()
 
+    res.status(200).json(brands)
+  } catch (error) {
+    res.status(404).json({ message: error.message })
+  }
+}
+export const createBrand = async (req, res) => {
+  try {
+    const { name } = req.body
+
+    const newBrand = new Brand({
+      name,
+    })
+
+    await newBrand.save()
+
+    res.status(200).json({ message: 'Success', newBrand })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+export const updateBrand = async (req, res) => {
+  try {
+    const { id } = req.params
+    const update = await Brand.findByIdAndUpdate(id, req.body)
+    if (!update) {
+      return res.status(404).json({ message: `Cannot find any brand with ID ${id}` })
+    }
+    const updatedBrand = await Brand.findById(id)
+    res.status(200).json({ message: 'Success', updatedBrand })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+export const deleteBrand = async (req, res) => {
+  try {
+    const { id } = req.params
+    await Brand.findByIdAndRemove(id)
+    res.status(200).send('Success')
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
 export const getCustomers = async (req, res) => {
   try {
     const customers = await User.find({ role: 'user' }).select('-password')
