@@ -12,11 +12,18 @@ import {
   deleteBrand,
   updateBrand,
 } from '../controllers/client.js'
-import { createProduct, deleteProduct, getProducts, updateProduct } from '../controllers/product.js'
+import {
+  createProduct,
+  deleteProduct,
+  getProductById,
+  getProducts,
+  updateProduct,
+} from '../controllers/product.js'
 
 const router = express.Router()
 
 router.get('/products', getProducts)
+router.get('/products/:id', getProductById)
 router.get('/categories', getCategories)
 router.get('/brands', getBrands)
 router.get('/customers', getCustomers)
