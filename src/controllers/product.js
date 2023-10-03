@@ -3,7 +3,34 @@ import ProductStat from '../models/Product.js'
 
 export const getProducts = async (req, res) => {
   try {
-    const product = await Product.find()
+    // sort should look like this: { "name": "price", "sort": "desc"}
+    const { page = 0, pageSize = 12, sort = null, search = '' } = req.query
+
+    // formatted sort should look like { userId: -1 }
+    const generateSort = () => {
+      const sortParsed = JSON.parse(sort)
+      const sortFormatted = {
+        // eslint-disable-next-line no-constant-condition
+        [sortParsed.field]: (sortParsed.sort = 'asc' ? 1 : -1),
+      }
+
+      return sortFormatted
+    }
+    const sortFormatted = sort ? generateSort() : {}
+
+    const product = await Product.find({
+      $or: [
+        // { price: { $regex: new RegExp(search, 'i') } },
+        { name: { $regex: new RegExp(search, 'i') } },
+      ],
+    })
+      .sort(sortFormatted)
+      .skip(page * pageSize)
+      .limit(pageSize)
+
+    const total = await Product.countDocuments({
+      name: { $regex: search, $options: 'i' },
+    })
 
     const productWithStats = await Promise.all(
       product.map(async (product) => {
@@ -14,7 +41,7 @@ export const getProducts = async (req, res) => {
         }
       }),
     )
-    res.status(200).json(productWithStats)
+    res.status(200).json({ productWithStats, total })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
