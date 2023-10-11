@@ -1,13 +1,24 @@
 import User from '../models/User.js'
 import Order from '../models/Order.js'
-import getCountryIso3 from 'country-iso-2-to-3'
 import Category from '../models/Category.js'
 import Brand from '../models/Brand.js'
+import Product from '../models/Product.js'
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find()
+    let query = {}
+    const { level } = req.query
 
+    if (level) {
+      query.level = level
+    }
+    const cat = await Category.find(query).populate('parent')
+    const categories = await Promise.all(
+      cat.map(async (category) => {
+        const productCount = await Product.countDocuments({ category: category._id })
+        return { ...category.toObject(), productCount }
+      }),
+    )
     res.status(200).json(categories)
   } catch (error) {
     res.status(404).json({ message: error.message })
@@ -15,11 +26,13 @@ export const getCategories = async (req, res) => {
 }
 export const createCategories = async (req, res) => {
   try {
-    const { name, parent } = req.body
+    const { name, parent, level } = req.body
 
+    const parentToUse = parent !== '' ? parent : undefined
     const newCategoty = new Category({
       name,
-      parent,
+      parent: parentToUse,
+      level,
     })
 
     await newCategoty.save()
@@ -62,8 +75,14 @@ export const deleteCategories = async (req, res) => {
 // }
 export const getBrands = async (req, res) => {
   try {
-    const brands = await Brand.find()
+    const bra = await Brand.find()
 
+    const brands = await Promise.all(
+      bra.map(async (brand) => {
+        const productCount = await Product.countDocuments({ brand: brand._id })
+        return { ...brand.toObject(), productCount }
+      }),
+    )
     res.status(200).json(brands)
   } catch (error) {
     res.status(404).json({ message: error.message })
@@ -115,7 +134,6 @@ export const getCustomers = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
-
 export const getOrders = async (req, res) => {
   try {
     const { page = 1, pageSize = 20, sort = null, search = '' } = req.query
@@ -141,29 +159,6 @@ export const getOrders = async (req, res) => {
     const total = await Order.countDocuments({ name: { $regex: search, $options: 'i' } })
 
     res.status(200).json({ orders, total })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const getGeography = async (req, res) => {
-  try {
-    const users = await User.find()
-
-    const mappedLocation = users.reduce((acc, { country }) => {
-      const countryISO3 = getCountryIso3(country)
-      if (!acc[countryISO3]) {
-        acc[countryISO3] = 0
-      }
-      acc[countryISO3]++
-      return acc
-    }, {})
-
-    const formattedLocation = Object.entries(mappedLocation).map(([country, count]) => {
-      return { id: country, value: count }
-    })
-
-    res.status(200).json(formattedLocation)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }

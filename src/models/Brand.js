@@ -3,8 +3,7 @@ import mongoose from 'mongoose'
 const brandSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    // parent: { type: mongoose.Types.ObjectId, ref: 'Category' },
-    // properties: [{ type: Object }],
+    isDel: Boolean,
   },
   {
     timestamps: true,

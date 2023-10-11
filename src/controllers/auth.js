@@ -4,7 +4,7 @@ import jwt, { verify } from 'jsonwebtoken'
 import randToken from 'rand-token'
 
 export const Register = async (req, res) => {
-  const { name, email, password, ...otherParams } = req.body
+  const { fullName, email, password, passwordAgain, ...otherParams } = req.body
   const SALT_ROUNDS = 10
   try {
     const existingEmail = await User.findOne({ email: email })
@@ -13,10 +13,14 @@ export const Register = async (req, res) => {
       return res.status(409).send('Email đã được sử dụng.')
     }
 
+    if (password !== passwordAgain) {
+      return res.status(409).send('Mật khẩu không giống nhau.')
+    }
+
     const hashPassword = bcrypt.hashSync(password, SALT_ROUNDS)
 
     const newUser = new User({
-      name,
+      name: fullName,
       password: hashPassword,
       email, // Assuming the password is already hashed in your model
       ...otherParams,
@@ -29,7 +33,7 @@ export const Register = async (req, res) => {
     }
 
     return res.send({
-      username: savedUser.username,
+      email: savedUser.email,
       // Include other relevant information if needed
     })
   } catch (error) {
@@ -37,6 +41,7 @@ export const Register = async (req, res) => {
     return res.status(500).send('Lỗi server.')
   }
 }
+
 export const Login = async (req, res) => {
   const { email, password } = req.body
   try {
@@ -143,6 +148,7 @@ export const refreshToken = async (req, res) => {
     return res.status(500).send('Lỗi server.')
   }
 }
+
 const decodeToken = async (token, secretKey) => {
   try {
     return await verify(token, secretKey, {
@@ -151,5 +157,50 @@ const decodeToken = async (token, secretKey) => {
   } catch (error) {
     console.log(`Error in decode access token: ${error}`)
     return null
+  }
+}
+export const updateProfile = async (req, res) => {
+  const userId = req.user._id
+  try {
+    const userData = req.body
+
+    // Update user data with userId
+    await User.findByIdAndUpdate(userId, userData)
+
+    res.status(200).send('Cập nhập thông tin cá nhân thành công')
+  } catch (error) {
+    res.status(500).send('Internal Server Error')
+  }
+}
+export const getUserInfo = async (req, res) => {
+  const userId = req.user._id
+  try {
+    // Find user by _id and exclude _id and password fields
+    const user = await User.findById(userId, '-_id -password -orders')
+
+    if (!user) {
+      return res.status(404).send('User not found.')
+    }
+
+    res.status(200).json(user)
+  } catch (error) {
+    console.error('Error retrieving user information:', error)
+    res.status(500).send('Internal Server Error')
+  }
+}
+export const getUserOrders = async (req, res) => {
+  const userId = req.user._id
+  try {
+    // Find user by _id and exclude _id and password fields
+    const user = await User.findById(userId, 'orders')
+
+    if (!user) {
+      return res.status(404).send('User not found.')
+    }
+
+    res.status(200).json(user)
+  } catch (error) {
+    console.error('Error retrieving user information:', error)
+    res.status(500).send('Internal Server Error')
   }
 }

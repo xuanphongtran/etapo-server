@@ -11,6 +11,7 @@ import generalRoutes from './src/routes/general.js'
 import managementRoutes from './src/routes/management.js'
 import salesRoutes from './src/routes/sales.js'
 import authRoutes from './src/routes/auth.js'
+import productRoutes from './src/routes/product.js'
 
 //configuration
 dotenv.config()
@@ -32,6 +33,7 @@ app.use('/general', generalRoutes)
 app.use('/management', managementRoutes)
 app.use('/sales', salesRoutes)
 app.use('/auth', authRoutes)
+app.use('/product', productRoutes)
 
 app.listen(port, () => {
   console.log('Server is running on port', port)

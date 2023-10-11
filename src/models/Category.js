@@ -4,7 +4,7 @@ const categorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     parent: { type: mongoose.Types.ObjectId, ref: 'Category' },
-    // properties: [{ type: Object }],
+    level: Number,
   },
   {
     timestamps: true,
