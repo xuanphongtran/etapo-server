@@ -6,20 +6,37 @@ import Product from '../models/Product.js'
 
 export const getCategories = async (req, res) => {
   try {
-    let query = {}
-    const { level } = req.query
+    //TODO LEVEL
+    const { page = 1, pageSize = 20, sort = null, search = '', level } = req.query
+    const catQuery = {
+      $or: [{ name: { $regex: new RegExp(search, 'i') } }],
+    }
 
     if (level) {
-      query.level = level
+      catQuery.level = level // Adjust 'level' according to your schema
     }
-    const cat = await Category.find(query).populate('parent')
+    const generalSort = () => {
+      const sortParsed = JSON.parse(sort)
+      const sortFormatted = {
+        [sortParsed.field]: sortParsed.sort == 'asc' ? 1 : -1,
+      }
+      return sortFormatted
+    }
+    const sortFormatted = sort ? generalSort() : {}
+    const cat = await Category.find(catQuery)
+      .populate('parent')
+      .sort(sortFormatted)
+      .skip(page * pageSize)
+      .limit(pageSize)
+
+    const total = await Category.countDocuments({ name: { $regex: search, $options: 'i' } })
     const categories = await Promise.all(
       cat.map(async (category) => {
         const productCount = await Product.countDocuments({ category: category._id })
         return { ...category.toObject(), productCount }
       }),
     )
-    res.status(200).json(categories)
+    res.status(200).json({ categories, total })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
@@ -45,7 +62,10 @@ export const createCategories = async (req, res) => {
 export const updateCategories = async (req, res) => {
   try {
     const { id } = req.params
-    const update = await Category.findByIdAndUpdate(id, req.body)
+    const { name, parent, level } = req.body
+
+    const parentToUse = parent !== '' ? parent : undefined
+    const update = await Category.findByIdAndUpdate(id, { name, parent: parentToUse, level })
     if (!update) {
       return res.status(404).json({ message: `Cannot find any category with ID ${id}` })
     }
@@ -75,7 +95,24 @@ export const deleteCategories = async (req, res) => {
 // }
 export const getBrands = async (req, res) => {
   try {
-    const bra = await Brand.find()
+    const { page = 1, pageSize = 20, sort = null, search = '' } = req.query
+
+    const generalSort = () => {
+      const sortParsed = JSON.parse(sort)
+      const sortFormatted = {
+        [sortParsed.field]: sortParsed.sort == 'asc' ? 1 : -1,
+      }
+      return sortFormatted
+    }
+    const sortFormatted = sort ? generalSort() : {}
+    const bra = await Brand.find({
+      $or: [{ name: { $regex: new RegExp(search, 'i') } }],
+    })
+      .sort(sortFormatted)
+      .skip(page * pageSize)
+      .limit(pageSize)
+
+    const total = await Order.countDocuments({ name: { $regex: search, $options: 'i' } })
 
     const brands = await Promise.all(
       bra.map(async (brand) => {
@@ -83,7 +120,7 @@ export const getBrands = async (req, res) => {
         return { ...brand.toObject(), productCount }
       }),
     )
-    res.status(200).json(brands)
+    res.status(200).json({ brands, total })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
