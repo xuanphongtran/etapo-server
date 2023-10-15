@@ -43,13 +43,14 @@ export const getCategories = async (req, res) => {
 }
 export const createCategories = async (req, res) => {
   try {
-    const { name, parent, level } = req.body
+    const { name, parent, level, image } = req.body
 
     const parentToUse = parent !== '' ? parent : undefined
     const newCategoty = new Category({
       name,
       parent: parentToUse,
       level,
+      image,
     })
 
     await newCategoty.save()
@@ -62,10 +63,10 @@ export const createCategories = async (req, res) => {
 export const updateCategories = async (req, res) => {
   try {
     const { id } = req.params
-    const { name, parent, level } = req.body
+    const { name, parent, level, image } = req.body
 
     const parentToUse = parent !== '' ? parent : undefined
-    const update = await Category.findByIdAndUpdate(id, { name, parent: parentToUse, level })
+    const update = await Category.findByIdAndUpdate(id, { name, parent: parentToUse, level, image })
     if (!update) {
       return res.status(404).json({ message: `Cannot find any category with ID ${id}` })
     }
