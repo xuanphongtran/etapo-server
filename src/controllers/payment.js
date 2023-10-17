@@ -116,7 +116,8 @@ export const vnpayReturn = (req, res, next) => {
   let vnp_Params = req.query
 
   const secureHash = vnp_Params['vnp_SecureHash']
-  const orderId = vnp_Params['vnp_TxnRef']
+  const paymentId = vnp_Params['vnp_TxnRef']
+  const orderId = vnp_Params['vnp_OrderInfo']
 
   delete vnp_Params['vnp_SecureHash']
   delete vnp_Params['vnp_SecureHashType']
@@ -129,7 +130,7 @@ export const vnpayReturn = (req, res, next) => {
 
   if (secureHash === signed) {
     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-    res.status(200).json({ code: vnp_Params['vnp_ResponseCode'], orderId })
+    res.status(200).json({ code: vnp_Params['vnp_ResponseCode'], orderId, paymentId })
   } else {
     res.json({ code: '97' })
   }
