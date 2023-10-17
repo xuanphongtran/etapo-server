@@ -4,6 +4,7 @@ const orderStatSchema = new mongoose.Schema(
   {
     userId: String,
     cost: String,
+    paymentId: String,
     products: [{ type: Object }],
     fullName: String,
     email: String,
