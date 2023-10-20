@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
 import Order from '../models/Order.js'
+import User from '../models/User.js'
+import Product from '../models/Product.js'
 import OverallStat from '../models/OverallStat.js'
 import jwt from 'jsonwebtoken'
 
@@ -49,5 +51,98 @@ export const updateOrder = async (req, res) => {
     res.status(200).send('Cập nhập đơn hàng  thành công')
   } catch (error) {
     res.status(500).send('Internal Server Error')
+  }
+}
+export const getOrders = async (req, res) => {
+  try {
+    const { page = 1, pageSize = 20, sort = null, search = '' } = req.query
+
+    const generalSort = () => {
+      const sortParsed = JSON.parse(sort)
+      const sortFormatted = {
+        [sortParsed.field]: sortParsed.sort == 'asc' ? 1 : -1,
+      }
+      return sortFormatted
+    }
+    const sortFormatted = sort ? generalSort() : {}
+    const orders = await Order.find({
+      $and: [
+        { $or: [{ userId: { $regex: new RegExp(search, 'i') } }] },
+        { delFlag: 0 }, // Add this condition
+      ],
+    })
+      .sort(sortFormatted)
+      .skip(page * pageSize)
+      .limit(pageSize)
+
+    const ordersWithUserName = await Promise.all(
+      orders.map(async (order) => {
+        const userName = await getUserNameById(order.userId)
+
+        const productsWithProductName = await Promise.all(
+          order.products.map(async (product) => {
+            const productName = await getProductNameById(product.productId)
+            return {
+              ...product,
+              name: productName,
+            }
+          }),
+        )
+        const provinceName = await getProvinceNameById(order.province)
+        const districtName = await getDistrictNameById(order.district)
+        const wardName = await getWardNameById(order.ward)
+        return {
+          ...order._doc,
+          userId: userName,
+          province: provinceName,
+          district: districtName,
+          ward: wardName,
+          products: productsWithProductName,
+        }
+      }),
+    )
+    const total = await Order.countDocuments({ name: { $regex: search, $options: 'i' } })
+
+    res.status(200).json({ orders: ordersWithUserName, total })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+const getUserNameById = async (userId) => {
+  const user = await User.findById(userId)
+  return user ? user.name : null
+}
+const getProductNameById = async (productId) => {
+  const product = await Product.findById(productId)
+  return product ? product.name : null
+}
+const getProvinceNameById = async (provinceId) => {
+  try {
+    const response = await fetch(`https://provinces.open-api.vn/api/p/${provinceId}/?q==Y`)
+    const provinceData = await response.json()
+    return provinceData ? provinceData.name : null
+  } catch (error) {
+    console.error('Error fetching province data:', error)
+    return null
+  }
+}
+const getDistrictNameById = async (districtId) => {
+  try {
+    const response = await fetch(`https://provinces.open-api.vn/api/d/${districtId}/?q==Y`)
+    const districtData = await response.json()
+    return districtData ? districtData.name : null
+  } catch (error) {
+    console.error('Error fetching dictrict data:', error)
+    return null
+  }
+}
+const getWardNameById = async (wardId) => {
+  try {
+    const response = await fetch(`https://provinces.open-api.vn/api/w/${wardId}/?q==Y`)
+    const wardData = await response.json()
+    return wardData ? wardData.name : null
+  } catch (error) {
+    console.error('Error fetching ward data:', error)
+    return null
   }
 }

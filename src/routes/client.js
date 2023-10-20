@@ -2,7 +2,6 @@ import express from 'express'
 import {
   getCustomers,
   getCategories,
-  getOrders,
   createCategories,
   deleteCategories,
   updateCategories,
@@ -17,7 +16,6 @@ const router = express.Router()
 router.get('/categories', getCategories)
 router.get('/brands', getBrands)
 router.get('/customers', getCustomers)
-router.get('/orders', getOrders)
 router.post('/categories', createCategories)
 router.post('/brands', createBrand)
 router.delete('/categories/:id', deleteCategories)

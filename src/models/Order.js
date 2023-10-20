@@ -15,7 +15,8 @@ const orderStatSchema = new mongoose.Schema(
     address: String,
     phoneNumber: String,
     paid: Boolean,
-    status: String,
+    status: Number,
+    delFlag: Number,
   },
   { timestamps: true },
 )

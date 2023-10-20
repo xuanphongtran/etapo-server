@@ -2,6 +2,8 @@ import User from '../models/User.js'
 import bcrypt from 'bcrypt'
 import jwt, { verify } from 'jsonwebtoken'
 import randToken from 'rand-token'
+import nodemailer from 'nodemailer'
+import { query } from 'express'
 
 export const Register = async (req, res) => {
   const { fullName, email, password, passwordAgain, ...otherParams } = req.body
@@ -202,5 +204,88 @@ export const getUserOrders = async (req, res) => {
   } catch (error) {
     console.error('Error retrieving user information:', error)
     res.status(500).send('Internal Server Error')
+  }
+}
+export const lostPassword = async (req, res) => {
+  const { email } = req.body
+  const user = await User.findOne({ email: email })
+  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET
+  const accessTokenLife = process.env.ACCESS_TOKEN_LIFE
+
+  if (user) {
+    // Tạo reset token mới
+    const dataForResetToken = {
+      _id: user._id,
+    }
+    // Tạo mã xác nhận và lưu vào user
+    const newResetToken = jwt.sign(dataForResetToken, accessTokenSecret, {
+      expiresIn: accessTokenLife,
+    })
+    // user.resetToken = newResetToken
+    await User.findOneAndUpdate({ email: email }, { resetToken: newResetToken })
+    sendResetEmail(email, newResetToken)
+
+    res.status(200).json('Email đặt lại mật khẩu đã được gửi.')
+  } else {
+    res.status(401).json('Email không tồn tại')
+  }
+}
+const sendResetEmail = (email, resetToken) => {
+  const mailOptions = {
+    from: 'Ziggy',
+    to: email,
+    subject: 'Đặt lại mật khẩu',
+    text: `Vào đường dẫn này để đặt lại mật khẩu: ${process.env.RESET_URL}?query=${resetToken}`,
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
+    },
+  })
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error)
+    } else {
+      console.log('Email sent: ' + info.response)
+    }
+  })
+}
+export const checkResetToken = async (req, res) => {
+  let token = req.query?.query
+
+  if (token == null) {
+    return res.status(500).json('Invalid or expired token')
+  }
+
+  const user = await User.findOne({ resetToken: token })
+  if (user) {
+    // Hiển thị form đặt lại mật khẩu
+    res.status(200).json(user.email)
+  } else {
+    res.status(500).json('Invalid or expired token')
+  }
+}
+
+// Route xử lý đặt lại mật khẩu
+export const resetPassword = async (req, res) => {
+  const resetToken = req.body.token
+  const newPassword = req.body.newPassword
+  const user = await User.findOne({ resetToken: resetToken })
+  const SALT_ROUNDS = 10
+  if (user) {
+    // Cập nhật mật khẩu và xóa mã xác nhận
+    const hashPassword = bcrypt.hashSync(newPassword, SALT_ROUNDS)
+
+    await User.findOneAndUpdate(
+      { resetToken: resetToken },
+      { resetToken: null, password: hashPassword },
+    )
+    res.send('Password reset successful')
+  } else {
+    res.send('Invalid or expired token')
   }
 }

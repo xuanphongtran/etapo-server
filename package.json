@@ -26,6 +26,7 @@
     "moment": "^2.29.4",
     "mongoose": "^7.0.1",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.9.6",
     "qs": "^6.11.2",
     "rand-token": "^1.0.1",
     "stripe": "^12.14.0"
