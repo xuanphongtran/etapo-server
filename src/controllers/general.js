@@ -1,6 +1,7 @@
 import User from '../models/User.js'
 import Order from '../models/Order.js'
 import OverallStat from '../models/OverallStat.js'
+import { getUserNameById } from './sales.js'
 
 export const getUser = async (req, res) => {
   try {
@@ -14,13 +15,22 @@ export const getUser = async (req, res) => {
 export const getDashboardStats = async (req, res) => {
   try {
     // hardcoded values
-    const currentMonth = 'November'
+    const currentMonth = '12'
     const currentYear = 2021
     const currentDay = '2021-11-15'
 
     /* Recent orders */
     const orders = await Order.find().limit(50).sort({ createdOn: -1 })
+    const ordersWithUserName = await Promise.all(
+      orders.map(async (order) => {
+        const userName = await getUserNameById(order.userId)
 
+        return {
+          ...order._doc,
+          userId: userName,
+        }
+      }),
+    )
     /* Overall Stats */
     const overallStat = await OverallStat.find({ year: currentYear })
 
@@ -43,7 +53,7 @@ export const getDashboardStats = async (req, res) => {
       salesByCategory,
       thisMonthStats,
       todayStats,
-      orders,
+      orders: ordersWithUserName,
     })
   } catch (error) {
     res.status(404).json({ message: error.message })

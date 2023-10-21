@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const orderStatSchema = new mongoose.Schema(
   {
-    userId: String,
+    userId: { type: mongoose.Types.ObjectId, ref: 'User' },
     cost: Number,
     paymentId: String,
     products: [{ type: Object }],

@@ -1,6 +1,6 @@
 import Product from '../models/Product.js'
 import Properties from '../models/Property.js'
-import ProductStat from '../models/Product.js'
+import ProductStat from '../models/ProductStat.js'
 import Rating from '../models/Rating.js'
 
 export const getProducts = async (req, res) => {
@@ -36,7 +36,7 @@ export const getProducts = async (req, res) => {
 
     const productWithStats = await Promise.all(
       product.map(async (product) => {
-        const stat = await ProductStat.find({ productId: product._id })
+        const stat = await ProductStat.findOne({ productId: product._id })
         return {
           ...product._doc,
           stat,
@@ -51,6 +51,7 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     const { name, price, description, images, discount, category, properties, brand } = req.body
+    const { quantity = 100 } = req.body
 
     const newProduct = new Product({
       name,
@@ -64,6 +65,14 @@ export const createProduct = async (req, res) => {
     })
 
     await newProduct.save()
+
+    const newProductStat = new ProductStat({
+      productId: newProduct._id,
+      quantity: quantity,
+    })
+
+    await newProductStat.save()
+
     res.status(200).json({ message: 'Success', newProduct })
   } catch (error) {
     res.status(404).json({ message: error.message })
@@ -73,6 +82,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params
     await Product.findByIdAndRemove(id)
+    await ProductStat.findOneAndRemove({ productId: id })
     res.status(200).send('Success')
   } catch (error) {
     res.status(404).json({ message: error.message })
@@ -81,7 +91,17 @@ export const deleteProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params
-    const { name, price, images, description, properties, category, discount, brand } = req.body
+    const {
+      name,
+      price,
+      images,
+      description,
+      properties,
+      category,
+      discount,
+      brand,
+      quantity = 100,
+    } = req.body
 
     const update = await Product.findByIdAndUpdate(id, {
       name,
@@ -93,13 +113,14 @@ export const updateProduct = async (req, res) => {
       category,
       brand,
     })
+    const updateStat = await ProductStat.findOneAndUpdate({ productId: id }, { quantity: quantity })
     if (!update) {
       return res.status(404).json({ message: `cannot find any category with ID ${id}` })
     }
     const updatedProduct = await Product.findById(id)
-    res.status(200).json({ message: 'Success', updatedProduct })
+    res.status(200).json({ message: 'Success', updatedProduct, updateStat })
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(500).json({ message: error.message })
   }
 }
 export const getProductById = async (req, res) => {
@@ -109,13 +130,14 @@ export const getProductById = async (req, res) => {
       Product.findById(id).populate('category', 'name').populate('brand', 'name'),
       Rating.find({ productId: id }),
     ])
-
+    const stat = await ProductStat.findOne({ productId: id })
     const totalStartPoints = reviews.reduce((acc, item) => acc + item.startPoint, 0)
     const averageStarPoint = reviews.length > 0 ? Math.round(totalStartPoints / reviews.length) : 0
     const response = {
       ...product.toObject(),
       reviewCount: reviews.length,
       averageStarPoint: averageStarPoint,
+      quantity: stat?.quantity,
     }
 
     res.status(200).json(response)

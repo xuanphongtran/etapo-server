@@ -8,6 +8,7 @@ const overallStatSchema = new mongoose.Schema(
     year: Number,
     monthlyData: [
       {
+        monthName: String,
         month: String,
         totalSales: Number,
         totalUnits: Number,
