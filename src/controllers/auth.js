@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt'
 import jwt, { verify } from 'jsonwebtoken'
 import randToken from 'rand-token'
 import nodemailer from 'nodemailer'
-import { query } from 'express'
 
 export const Register = async (req, res) => {
   const { fullName, email, password, passwordAgain, ...otherParams } = req.body

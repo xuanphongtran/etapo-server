@@ -108,6 +108,41 @@ export const getOrders = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+export const getOrdersById = async (req, res) => {
+  const orderId = req.params.id
+  try {
+    const order = await Order.findById(orderId)
+
+    if (!order) {
+      return res.status(401).json({ message: 'Không tìm thấy đơn hàng' })
+    }
+
+    const userName = await getUserNameById(order.userId)
+    const productsWithProductName = await Promise.all(
+      order.products.map(async (product) => {
+        const productName = await getProductNameById(product.productId)
+        return {
+          ...product,
+          name: productName,
+        }
+      }),
+    )
+    const provinceName = await getProvinceNameById(order.province)
+    const districtName = await getDistrictNameById(order.district)
+    const wardName = await getWardNameById(order.ward)
+    res.status(200).json({
+      ...order._doc,
+      userId: userName,
+      province: provinceName,
+      district: districtName,
+      ward: wardName,
+      products: productsWithProductName,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Không tìm thấy đơn hàng' })
+  }
+}
 const getUserNameById = async (userId) => {
   const user = await User.findById(userId)
   return user ? user.name : null
