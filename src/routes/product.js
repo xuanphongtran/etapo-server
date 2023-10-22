@@ -5,6 +5,7 @@ import {
   createReviews,
   deleteProduct,
   deleteProperties,
+  getLikeProducts,
   getProductById,
   getProducts,
   getProperties,
@@ -16,6 +17,7 @@ import { authenticate } from '../middleware/auth.js'
 
 const router = express.Router()
 
+router.get('/likeproducts', getLikeProducts)
 router.get('/', getProducts)
 router.get('/reviews', getReviews)
 router.get('/properties', getProperties)

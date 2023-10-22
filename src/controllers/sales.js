@@ -4,7 +4,7 @@ import User from '../models/User.js'
 import Product from '../models/Product.js'
 import OverallStat from '../models/OverallStat.js'
 import ProductStat from '../models/ProductStat.js'
-
+import nodemailer from 'nodemailer'
 import jwt from 'jsonwebtoken'
 
 export const getSales = async (req, res) => {
@@ -37,7 +37,7 @@ export const createOrder = async (req, res) => {
 
     const newOrder = new Order({ ...orderData, userId, products: parsedData })
     await newOrder.save()
-
+    sendSuccessEmail(orderData.email, newOrder._id)
     for (const item of parsedData) {
       updateProductStat(item, newOrder)
       updateOverallStat(item, newOrder)
@@ -47,6 +47,30 @@ export const createOrder = async (req, res) => {
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
+}
+const sendSuccessEmail = (email, orderId) => {
+  const mailOptions = {
+    from: 'Ziggy',
+    to: email,
+    subject: 'Đặt Hàng Thành Công',
+    text: `Bạn đã đặt hàng thành công \n Mã đơn hàng của bạn ${orderId}`,
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS,
+    },
+  })
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error)
+    } else {
+      console.log('Email sent: ' + info.response)
+    }
+  })
 }
 const updateProductStat = async (item, newOrder) => {
   const productStat = await ProductStat.findOne({ productId: item.productId })

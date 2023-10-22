@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt'
 import jwt, { verify } from 'jsonwebtoken'
 import randToken from 'rand-token'
 import nodemailer from 'nodemailer'
+import CartProducts from '../models/CartProduct.js'
+import WishlistProducts from '../models/WishlistProduct.js'
 
 export const Register = async (req, res) => {
   const { fullName, email, password, passwordAgain, ...otherParams } = req.body
@@ -28,6 +30,15 @@ export const Register = async (req, res) => {
     })
 
     const savedUser = await newUser.save()
+    const newCartProduct = new CartProducts({
+      userId: savedUser._id,
+    })
+    await newCartProduct.save()
+
+    const newWishlist = new WishlistProducts({
+      userId: savedUser._id,
+    })
+    await newWishlist.save()
 
     if (!savedUser) {
       return res.status(400).send('Có lỗi trong quá trình tạo tài khoản, vui lòng thử lại.')
@@ -62,6 +73,7 @@ export const Login = async (req, res) => {
 
     const dataForAccessToken = {
       _id: user._id,
+      role: user.role,
     }
 
     const accessToken = jwt.sign(dataForAccessToken, accessTokenSecret, {
@@ -164,6 +176,9 @@ export const updateProfile = async (req, res) => {
   const userId = req.user._id
   try {
     const userData = req.body
+    if (userData.role) {
+      userData.role = 'user'
+    }
 
     // Update user data with userId
     await User.findByIdAndUpdate(userId, userData)

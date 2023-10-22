@@ -13,7 +13,7 @@ import salesRoutes from './src/routes/sales.js'
 import authRoutes from './src/routes/auth.js'
 import productRoutes from './src/routes/product.js'
 import paymentRoutes from './src/routes/payment.js'
-
+import cartRoutes from './src/routes/cart.js'
 //configuration
 dotenv.config()
 const app = express()
@@ -36,6 +36,7 @@ app.use('/sales', salesRoutes)
 app.use('/auth', authRoutes)
 app.use('/product', productRoutes)
 app.use('/payment', paymentRoutes)
+app.use('/cart', cartRoutes)
 
 app.listen(port, () => {
   console.log('Server is running on port', port)

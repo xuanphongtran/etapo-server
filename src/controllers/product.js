@@ -8,16 +8,14 @@ export const getProducts = async (req, res) => {
     // sort should look like this: { "name": "price", "sort": "desc"}
     const { page = 0, pageSize = 12, sort = null, search = '', category, brand } = req.query
     // formatted sort should look like { userId: -1 }
-    const generateSort = () => {
+    const generalSort = () => {
       const sortParsed = JSON.parse(sort)
       const sortFormatted = {
-        // eslint-disable-next-line no-constant-condition
-        [sortParsed.field]: (sortParsed.sort = 'asc' ? 1 : -1),
+        [sortParsed.field]: sortParsed.sort == 'asc' ? 1 : -1,
       }
-
       return sortFormatted
     }
-    const sortFormatted = sort ? generateSort() : {}
+    const sortFormatted = sort ? generalSort() : {}
 
     const product = await Product.find({
       $or: [{ name: { $regex: new RegExp(search, 'i') } }],
@@ -37,13 +35,18 @@ export const getProducts = async (req, res) => {
     const productWithStats = await Promise.all(
       product.map(async (product) => {
         const stat = await ProductStat.findOne({ productId: product._id })
+        const rating = await Rating.find({ productId: product._id })
+        const totalstarPoints = rating.reduce((acc, item) => acc + item.starPoint, 0)
+        const averageStarPoint = rating.length > 0 ? Math.round(totalstarPoints / rating.length) : 0
         return {
           ...product._doc,
           stat,
+          reviewCount: rating.length,
+          averageStarPoint,
         }
       }),
     )
-    res.status(200).json({ productWithStats, total })
+    res.status(200).json({ productWithStats, total, sortFormatted })
   } catch (error) {
     res.status(404).json({ message: error.message })
   }
@@ -131,8 +134,8 @@ export const getProductById = async (req, res) => {
       Rating.find({ productId: id }),
     ])
     const stat = await ProductStat.findOne({ productId: id })
-    const totalStartPoints = reviews.reduce((acc, item) => acc + item.startPoint, 0)
-    const averageStarPoint = reviews.length > 0 ? Math.round(totalStartPoints / reviews.length) : 0
+    const totalstarPoints = reviews.reduce((acc, item) => acc + item.starPoint, 0)
+    const averageStarPoint = reviews.length > 0 ? Math.round(totalstarPoints / reviews.length) : 0
     const response = {
       ...product.toObject(),
       reviewCount: reviews.length,
@@ -193,10 +196,10 @@ export const deleteProperties = async (req, res) => {
 export const createReviews = async (req, res) => {
   const userId = req.user._id
   try {
-    const { startPoint, comment, productId } = req.body
+    const { starPoint, comment, productId } = req.body
 
     const newReview = new Rating({
-      startPoint,
+      starPoint,
       comment,
       productId,
       userId: userId,
@@ -217,5 +220,30 @@ export const getReviews = async (req, res) => {
     res.status(200).json(reviews)
   } catch (error) {
     res.status(404).json({ message: error.message })
+  }
+}
+export const getLikeProducts = async (req, res) => {
+  try {
+    const randomDocuments = await Product.aggregate([
+      { $sample: { size: 8 } }, // Lấy mẫu 10 phần tử ngẫu nhiên
+    ])
+
+    const products = await Promise.all(
+      randomDocuments.map(async (product) => {
+        const stat = await ProductStat.findOne({ productId: product._id })
+        const rating = await Rating.find({ productId: product._id })
+        const totalstarPoints = rating.reduce((acc, item) => acc + item.starPoint, 0)
+        const averageStarPoint = rating.length > 0 ? Math.round(totalstarPoints / rating.length) : 0
+        return {
+          ...product,
+          stat,
+          reviewCount: rating.length,
+          averageStarPoint,
+        }
+      }),
+    )
+    res.status(200).json(products)
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' })
   }
 }

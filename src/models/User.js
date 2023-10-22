@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema(
     district: String,
     ward: String,
     address: String,
-    occupation: String,
     phoneNumber: String,
     role: {
       type: String,

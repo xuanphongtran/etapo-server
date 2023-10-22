@@ -3,6 +3,7 @@ import mongoose from 'mongoose'
 const productStatSchema = new mongoose.Schema(
   {
     productId: { type: mongoose.Types.ObjectId, ref: 'Product' },
+    quantity: Number,
     yearlySalesTotal: Number,
     yearlyTotalSoldUnits: Number,
     year: Number,
@@ -20,7 +21,6 @@ const productStatSchema = new mongoose.Schema(
         totalUnits: Number,
       },
     ],
-    quantity: Number,
   },
   { timestamps: true },
 )
