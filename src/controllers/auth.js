@@ -1,10 +1,12 @@
 import User from '../models/User.js'
 import bcrypt from 'bcrypt'
-import jwt, { verify } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import randToken from 'rand-token'
 import nodemailer from 'nodemailer'
 import CartProducts from '../models/CartProduct.js'
 import WishlistProducts from '../models/WishlistProduct.js'
+import pkg from 'jsonwebtoken'
+const { verify } = pkg
 
 export const Register = async (req, res) => {
   const { fullName, email, password, passwordAgain, ...otherParams } = req.body
