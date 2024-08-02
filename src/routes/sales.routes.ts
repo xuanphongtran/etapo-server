@@ -1,4 +1,3 @@
-import express from 'express'
 import {
   acceptOrder,
   cancelOrder,
@@ -6,8 +5,9 @@ import {
   getOrders,
   getOrdersById,
   getSales,
-  updateOrder,
-} from '../controllers/sales.js'
+  updateOrder
+} from '@/controllers/sales.controller'
+import express from 'express'
 
 const router = express.Router()
 

@@ -1,26 +1,16 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import cors from 'cors'
-import helmet from 'helmet'
 import bodyParser from 'body-parser'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import express from 'express'
+import helmet from 'helmet'
 import morgan from 'morgan'
 import { Server } from 'socket.io'
+import connectDatabase from './configs/db.config'
 
-import connectDatabase from './src/configs/db.config.js'
-import clientRoutes from './src/routes/client.js'
-import generalRoutes from './src/routes/general.js'
-import managementRoutes from './src/routes/management.js'
-import salesRoutes from './src/routes/sales.js'
-import authRoutes from './src/routes/auth.js'
-import productRoutes from './src/routes/product.js'
-import paymentRoutes from './src/routes/payment.js'
-import cartRoutes from './src/routes/cart.js'
-import chatRoutes from './src/routes/chat.js'
-import { getChatDataAndReturn } from './src/controllers/chat.js'
 //configuration
 dotenv.config()
 const app = express()
-const port = process.env.PORT || 5000
+const port = process.env.PORT || HttpStatusCode.InternalServerError0
 
 connectDatabase()
 
@@ -40,8 +30,8 @@ const io = new Server(server, {
   cors: {
     origin: 'http://localhost:3001',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true,
-  },
+    credentials: true
+  }
 })
 io.on('connection', (socket) => {
   console.log('New client connected' + socket.id)

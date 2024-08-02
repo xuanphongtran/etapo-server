@@ -1,15 +1,15 @@
-import express from 'express'
 import {
-  getCustomers,
-  getCategories,
-  createCategories,
-  deleteCategories,
-  updateCategories,
-  getBrands,
   createBrand,
+  createCategories,
   deleteBrand,
+  deleteCategories,
+  getBrands,
+  getCategories,
+  getCustomers,
   updateBrand,
-} from '../controllers/client.js'
+  updateCategories
+} from '@/controllers/client.controller'
+import express from 'express'
 
 const router = express.Router()
 

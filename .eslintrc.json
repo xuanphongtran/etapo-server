@@ -17,19 +17,20 @@
 
   "rules": {
     "no-multiple-empty-lines": ["warn", { "max": 1, "maxEOF": 0 }],
-    "no-trailing-spaces": "warn",
-    "semi": ["error", "never"],
-    "quotes": ["error", "single"],
     "no-unused-vars": "warn",
-    "indent": [
+    "import/no-unresolved": "error",
+    "prettier/prettier": [
       "warn",
-      2,
       {
-        "SwitchCase": 1,
-        "FunctionDeclaration": {
-          "body": 1,
-          "parameters": 2
-        }
+        "arrowParens": "always",
+        "semi": false,
+        "trailingComma": "none",
+        "tabWidth": 2,
+        "endOfLine": "auto",
+        "useTabs": false,
+        "singleQuote": true,
+        "printWidth": 120,
+        "jsxSingleQuote": true
       }
     ]
   }
