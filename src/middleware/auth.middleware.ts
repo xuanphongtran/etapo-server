@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken'
+import { ACCESS_TOKEN_SECRET } from '@/constants/env'
 import httpStatus from 'http-status'
+import jwt from 'jsonwebtoken'
 
-// Protect routes
-export const authenticate = (req, res, next) => {
+const authenticate = (req: any, res: any, next: any) => {
   try {
     let token
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -13,18 +13,20 @@ export const authenticate = (req, res, next) => {
     if (!token) {
       return res.status(httpStatus.UNAUTHORIZED).json({
         success: false,
-        message: 'Not authorized',
+        message: 'Not authorized'
       })
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET)
     req.user = decoded
     next()
   } catch (error) {
     return res.status(httpStatus.UNAUTHORIZED).json({
       success: false,
-      message: 'Not authorized',
+      message: 'Not authorized'
     })
   }
 }
+
+export default authenticate

@@ -1,33 +1,33 @@
-import express from 'express'
 import {
   createProduct,
-  createProperties,
+  createProperty,
   createReviews,
   deleteProduct,
-  deleteProperties,
+  deleteProperty,
   getLikeProducts,
   getProductById,
   getProducts,
-  getProperties,
+  getProperty,
   getReviews,
   updateProduct,
-  updateProperties,
-} from '../controllers/product.js'
-import { authenticate } from '../middleware/auth.js'
+  updateProperty
+} from '@/controllers/product.controller'
+import authenticate from '@/middleware/auth.middleware'
+import express from 'express'
 
 const router = express.Router()
 
 router.get('/likeproducts', getLikeProducts)
 router.get('/', getProducts)
 router.get('/reviews', getReviews)
-router.get('/properties', getProperties)
+router.get('/properties', getProperty)
 router.get('/:id', getProductById)
 router.post('/', createProduct)
 router.delete('/:id', deleteProduct)
 router.put('/:id', updateProduct)
-router.post('/property', createProperties)
-router.delete('/property/:id', deleteProperties)
-router.put('/property/:id', updateProperties)
+router.post('/property', createProperty)
+router.delete('/property/:id', deleteProperty)
+router.put('/property/:id', updateProperty)
 router.post('/reviews', authenticate, createReviews)
 
 export default router

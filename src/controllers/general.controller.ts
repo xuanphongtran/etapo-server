@@ -1,18 +1,20 @@
-import User from '../models/User.js'
-import Order from '../models/Order.js'
-import OverallStat from '../models/OverallStat.js'
-import { getUserNameById } from './sales.js'
+import { HttpStatusCode } from '@/constants/httpStatusCode.enum'
+import Order from '@/models/Order'
+import OverallStat from '@/models/OverallStat'
+import User from '@/models/User'
+import { Request, Response } from 'express'
+import { getUserNameById } from './sales.controller'
 
-export const getUser = async (req, res) => {
+export const getUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const user = await User.findById(id)
-    res.status(200).json(user)
+    res.status(HttpStatusCode.Ok).json(user)
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(404).json({ message: error })
   }
 }
-export const getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req: Request, res: Response) => {
   try {
     // hardcoded values
     const currentMonth = '12'
@@ -22,20 +24,19 @@ export const getDashboardStats = async (req, res) => {
     /* Recent orders */
     const orders = await Order.find().limit(50).sort({ createdOn: -1 })
     const ordersWithUserName = await Promise.all(
-      orders.map(async (order) => {
+      orders.map(async (order: any) => {
         const userName = await getUserNameById(order.userId)
 
         return {
           ...order._doc,
-          userId: userName,
+          userId: userName
         }
-      }),
+      })
     )
     /* Overall Stats */
     const overallStat = await OverallStat.find({ year: currentYear })
 
-    const { totalCustomers, yearlyTotalSoldUnits, yearlySalesTotal, monthlyData, salesByCategory } =
-      overallStat[0]
+    const { totalCustomers, yearlyTotalSoldUnits, yearlySalesTotal, monthlyData, salesByCategory } = overallStat[0]
 
     const thisMonthStats = overallStat[0].monthlyData.find(({ month }) => {
       return month === currentMonth
@@ -45,7 +46,7 @@ export const getDashboardStats = async (req, res) => {
       return date === currentDay
     })
 
-    res.status(200).json({
+    res.status(HttpStatusCode.Ok).json({
       totalCustomers,
       yearlyTotalSoldUnits,
       yearlySalesTotal,
@@ -53,9 +54,9 @@ export const getDashboardStats = async (req, res) => {
       salesByCategory,
       thisMonthStats,
       todayStats,
-      orders: ordersWithUserName,
+      orders: ordersWithUserName
     })
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(404).json({ message: error })
   }
 }

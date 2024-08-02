@@ -1,12 +1,14 @@
-import User from '../models/User.js'
-import Order from '../models/Order.js'
-import { getDistrictNameById, getProvinceNameById, getWardNameById } from './sales.js'
+import { HttpStatusCode } from '@/constants/httpStatusCode.enum'
+import Order from '@/models/Order'
+import User from '@/models/User'
+import { Request, Response } from 'express'
+import { getDistrictNameById, getProvinceNameById, getWardNameById } from './sales.controller'
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.find({ role: 'user' }).select('-password')
     const userWithName = await Promise.all(
-      users.map(async (user) => {
+      users.map(async (user: any) => {
         const provinceName = await getProvinceNameById(user.province)
         const districtName = await getDistrictNameById(user.district)
         const wardName = await getWardNameById(user.ward)
@@ -16,12 +18,12 @@ export const getUsers = async (req, res) => {
           province: provinceName,
           district: districtName,
           ward: wardName,
-          orders: userOrders?.length,
+          orders: userOrders?.length
         }
-      }),
+      })
     )
-    res.status(200).json(userWithName)
+    res.status(HttpStatusCode.Ok).json(userWithName)
   } catch (error) {
-    res.status(404).json({ message: error.message })
+    res.status(404).json({ message: error })
   }
 }

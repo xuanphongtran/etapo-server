@@ -1,0 +1,47 @@
+name: Build Express Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the latest stable Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "node"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Init Prisma
+        run: npx prisma migrate dev --name init
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Run Build
+        run: npm run build
+
+      # - name: Run start
+      #   run: npm start
+      #   env:
+      #     COMMON_RATE_LIMIT_MAX_REQUESTS: ${{ secrets.COMMON_RATE_LIMIT_MAX_REQUESTS }}
+      #     COMMON_RATE_LIMIT_WINDOW_MS: ${{ secrets.COMMON_RATE_LIMIT_MAX_REQUESTS }}
+      #     CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+      #     HOST: ${{ secrets.HOST }}
+      #     NODE_ENV: ${{ secrets.NODE_ENV }}
+      #     PORT: ${{ secrets.PORT }}
+
+      # - name: Run Test
+      #   run: npm test

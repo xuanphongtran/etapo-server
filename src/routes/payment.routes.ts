@@ -1,5 +1,5 @@
+import { createPaymentUrl, vnpayIpn, vnpayReturn } from '@/controllers/payment.controller'
 import express from 'express'
-import { createPaymentUrl, vnpayIpn, vnpayReturn } from '../controllers/payment.js'
 
 const router = express.Router()
 

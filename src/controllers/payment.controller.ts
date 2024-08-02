@@ -1,20 +1,15 @@
 /* eslint-disable no-unused-vars */
+import { vnp_HashSecret, vnp_ReturnUrl, vnp_TmnCode } from '@/constants/env'
+import { HttpStatusCode } from '@/constants/httpStatusCode.enum'
+import crypto from 'crypto'
+import { Request, Response } from 'express'
 import moment from 'moment'
 import QueryString from 'qs'
-import crypto from 'crypto'
-import { request } from 'http'
-import { response } from 'express'
 
-export const createPaymentUrl = async (req, res, next) => {
+export const createPaymentUrl = async (req: Request, res: Response, next: any) => {
   try {
-    const ipAddr =
-      req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      req.connection.socket.remoteAddress
-    const tmnCode = process.env.vnp_TmnCode
-    const secretKey = process.env.vnp_HashSecret
-    const returnUrl = process.env.vnp_ReturnUrl
+    const ipAddr = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress
+
     const date = new Date()
     const createDate = moment(date).format('YYYYMMDDHHmmss')
 
@@ -27,37 +22,39 @@ export const createPaymentUrl = async (req, res, next) => {
     const orderType = req.body.orderType
 
     const currCode = 'VND'
-    let vnp_Params = {}
+    let vnp_Params: {
+      [key: string]: string | string[] | number
+    } = {}
 
     vnp_Params['vnp_Version'] = '2.1.0'
     vnp_Params['vnp_Command'] = 'pay'
-    vnp_Params['vnp_TmnCode'] = tmnCode
+    vnp_Params['vnp_TmnCode'] = vnp_TmnCode
     vnp_Params['vnp_Locale'] = 'vn'
     vnp_Params['vnp_CurrCode'] = currCode
     vnp_Params['vnp_TxnRef'] = orderId
     vnp_Params['vnp_OrderInfo'] = orderInfo
     vnp_Params['vnp_OrderType'] = orderType
     vnp_Params['vnp_Amount'] = amount * 100
-    vnp_Params['vnp_ReturnUrl'] = returnUrl
-    vnp_Params['vnp_IpAddr'] = ipAddr
+    vnp_Params['vnp_ReturnUrl'] = vnp_ReturnUrl
+    vnp_Params['vnp_IpAddr'] = ipAddr || ''
     vnp_Params['vnp_CreateDate'] = createDate
 
     vnp_Params = sortObject(vnp_Params)
 
     const signData = QueryString.stringify(vnp_Params, { encode: false })
-    const hmac = crypto.createHmac('sha512', secretKey)
+    const hmac = crypto.createHmac('sha512', vnp_HashSecret)
     const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex')
     vnp_Params['vnp_SecureHash'] = signed
     vnpUrl += '?' + QueryString.stringify(vnp_Params, { encode: false })
 
     // res.redirect(vnpUrl)
-    res.status(200).json(vnpUrl)
+    res.status(HttpStatusCode.Ok).json(vnpUrl)
   } catch (error) {
-    res.status(500).json(error)
+    res.status(HttpStatusCode.InternalServerError).json(error)
   }
 }
 
-export const vnpayIpn = (req, res, next) => {
+export const vnpayIpn = (req: Request, res: Response, next: any) => {
   let vnp_Params = req.query
   const secureHash = vnp_Params['vnp_SecureHash']
   const orderId = vnp_Params['vnp_TxnRef']
@@ -66,11 +63,10 @@ export const vnpayIpn = (req, res, next) => {
   delete vnp_Params['vnp_SecureHash']
   delete vnp_Params['vnp_SecureHashType']
 
-  const secretKey = process.env.vnp_HashSecret
   vnp_Params = sortObject(vnp_Params)
 
   const signData = QueryString.stringify(vnp_Params, { encode: false })
-  const hmac = crypto.createHmac('sha512', secretKey)
+  const hmac = crypto.createHmac('sha512', vnp_HashSecret)
   const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex')
 
   let paymentStatus = '0' // Giả sử '0' là trạng thái khởi tạo giao dịch, chưa có IPN. Trạng thái này được lưu khi yêu cầu thanh toán chuyển hướng sang Cổng thanh toán VNPAY tại đầu khởi tạo đơn hàng.
@@ -89,30 +85,30 @@ export const vnpayIpn = (req, res, next) => {
             //thanh cong
             //paymentStatus = '1'
             // Ở đây cập nhật trạng thái giao dịch thanh toán thành công vào CSDL của bạn
-            res.status(200).json({ RspCode: '00', Message: 'Success' })
+            res.status(HttpStatusCode.Ok).json({ RspCode: '00', Message: 'Success' })
           } else {
             //that bai
             //paymentStatus = '2'
             // Ở đây cập nhật trạng thái giao dịch thanh toán thất bại vào CSDL của bạn
-            res.status(200).json({ RspCode: '00', Message: 'Success' })
+            res.status(HttpStatusCode.Ok).json({ RspCode: '00', Message: 'Success' })
           }
         } else {
           res
-            .status(200)
+            .status(HttpStatusCode.Ok)
             .json({ RspCode: '02', Message: 'This order has been updated to the payment status' })
         }
       } else {
-        res.status(200).json({ RspCode: '04', Message: 'Amount invalid' })
+        res.status(HttpStatusCode.Ok).json({ RspCode: '04', Message: 'Amount invalid' })
       }
     } else {
-      res.status(200).json({ RspCode: '01', Message: 'Order not found' })
+      res.status(HttpStatusCode.Ok).json({ RspCode: '01', Message: 'Order not found' })
     }
   } else {
-    res.status(200).json({ RspCode: '97', Message: 'Checksum failed' })
+    res.status(HttpStatusCode.Ok).json({ RspCode: '97', Message: 'Checksum failed' })
   }
 }
 
-export const vnpayReturn = (req, res, next) => {
+export const vnpayReturn = (req: Request, res: Response, next: any) => {
   let vnp_Params = req.query
 
   const secureHash = vnp_Params['vnp_SecureHash']
@@ -123,14 +119,13 @@ export const vnpayReturn = (req, res, next) => {
   delete vnp_Params['vnp_SecureHashType']
 
   vnp_Params = sortObject(vnp_Params)
-  const secretKey = process.env.vnp_HashSecret
   const signData = QueryString.stringify(vnp_Params, { encode: false })
-  const hmac = crypto.createHmac('sha512', secretKey)
+  const hmac = crypto.createHmac('sha512', vnp_HashSecret)
   const signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex')
 
   if (secureHash === signed) {
     //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-    res.status(200).json({ code: vnp_Params['vnp_ResponseCode'], orderId, paymentId })
+    res.status(HttpStatusCode.Ok).json({ code: vnp_Params['vnp_ResponseCode'], orderId, paymentId })
   } else {
     res.json({ code: '97' })
   }
@@ -298,8 +293,8 @@ export const vnpayReturn = (req, res, next) => {
 //   )
 // }
 
-const sortObject = (obj) => {
-  const sorted = {}
+const sortObject = (obj: any) => {
+  const sorted: { [key: string]: string } = {}
   const str = []
   let key
   for (key in obj) {

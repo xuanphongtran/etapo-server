@@ -1,14 +1,16 @@
-import User from '../models/User.js'
+import { ACCESS_TOKEN_LIFE, ACCESS_TOKEN_SECRET } from '@/constants/env'
+import { HttpStatusCode } from '@/constants/httpStatusCode.enum'
+import CartProducts from '@/models/CartProduct'
+import User from '@/models/User'
+import WishlistProducts from '@/models/WishlistProduct'
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import randToken from 'rand-token'
+import { Request, Response } from 'express'
+import { default as jwt, JwtPayload, default as pkg } from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
-import CartProducts from '../models/CartProduct.js'
-import WishlistProducts from '../models/WishlistProduct.js'
-import pkg from 'jsonwebtoken'
+import randToken from 'rand-token'
 const { verify } = pkg
 
-export const Register = async (req, res) => {
+export const Register = async (req: Request, res: Response) => {
   const { fullName, email, password, passwordAgain, ...otherParams } = req.body
   const SALT_ROUNDS = 10
   try {
@@ -28,17 +30,17 @@ export const Register = async (req, res) => {
       name: fullName,
       password: hashPassword,
       email, // Assuming the password is already hashed in your model
-      ...otherParams,
+      ...otherParams
     })
 
     const savedUser = await newUser.save()
     const newCartProduct = new CartProducts({
-      userId: savedUser._id,
+      userId: savedUser._id
     })
     await newCartProduct.save()
 
     const newWishlist = new WishlistProducts({
-      userId: savedUser._id,
+      userId: savedUser._id
     })
     await newWishlist.save()
 
@@ -47,16 +49,16 @@ export const Register = async (req, res) => {
     }
 
     return res.send({
-      email: savedUser.email,
+      email: savedUser.email
       // Include other relevant information if needed
     })
   } catch (error) {
     console.error(error)
-    return res.status(500).send('Lỗi server.')
+    return res.status(HttpStatusCode.InternalServerError).send('Lỗi server.')
   }
 }
 
-export const Login = async (req, res) => {
+export const Login = async (req: Request, res: Response) => {
   const { email, password } = req.body
   try {
     const user = await User.findOne({ email: email })
@@ -70,16 +72,16 @@ export const Login = async (req, res) => {
       return res.status(401).send('Mật khẩu không chính xác.')
     }
 
-    const accessTokenLife = process.env.ACCESS_TOKEN_LIFE
-    const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET
+    const accessTokenLife = ACCESS_TOKEN_LIFE
+    const accessTokenSecret = ACCESS_TOKEN_SECRET
 
     const dataForAccessToken = {
       _id: user._id,
-      role: user.role,
+      role: user.role
     }
 
     const accessToken = jwt.sign(dataForAccessToken, accessTokenSecret, {
-      expiresIn: accessTokenLife,
+      expiresIn: accessTokenLife
     })
 
     let refreshToken = randToken.generate(64)
@@ -97,15 +99,15 @@ export const Login = async (req, res) => {
       msg: 'Đăng nhập thành công.',
       accessToken,
       refreshToken,
-      user,
+      user
     })
   } catch (error) {
     console.error(error)
-    return res.status(500).send('Lỗi server.')
+    return res.status(HttpStatusCode.InternalServerError).send('Lỗi server.')
   }
 }
 
-export const refreshToken = async (req, res) => {
+export const refreshToken = async (req: Request, res: Response) => {
   // Lấy access token từ header
   let accessToken
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -122,8 +124,8 @@ export const refreshToken = async (req, res) => {
     return res.status(400).send('Không tìm thấy refresh token.')
   }
 
-  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET
-  const accessTokenLife = process.env.ACCESS_TOKEN_LIFE
+  const accessTokenSecret = ACCESS_TOKEN_SECRET
+  const accessTokenLife = ACCESS_TOKEN_LIFE
 
   try {
     // Decode access token đó
@@ -132,7 +134,7 @@ export const refreshToken = async (req, res) => {
       return res.status(400).send('Access token không hợp lệ.')
     }
 
-    const email = decoded.payload.email // Lấy username từ payload
+    const email = (decoded as JwtPayload).payload.email // Lấy username từ payload
 
     const user = await User.findOne({ email })
     if (!user) {
@@ -145,37 +147,37 @@ export const refreshToken = async (req, res) => {
 
     // Tạo access token mới
     const dataForAccessToken = {
-      _id: user._id,
+      _id: user._id
     }
 
     const newAccessToken = jwt.sign(dataForAccessToken, accessTokenSecret, {
-      expiresIn: accessTokenLife,
+      expiresIn: accessTokenLife
     })
     if (!newAccessToken) {
       return res.status(400).send('Tạo access token mới không thành công, vui lòng thử lại.')
     }
 
     return res.json({
-      accessToken: newAccessToken,
+      accessToken: newAccessToken
     })
   } catch (error) {
     console.error(error)
-    return res.status(500).send('Lỗi server.')
+    return res.status(HttpStatusCode.InternalServerError).send('Lỗi server.')
   }
 }
 
-const decodeToken = async (token, secretKey) => {
+const decodeToken = async (token: string, secretKey: string) => {
   try {
     return await verify(token, secretKey, {
-      ignoreExpiration: true,
+      ignoreExpiration: true
     })
   } catch (error) {
     console.log(`Error in decode access token: ${error}`)
     return null
   }
 }
-export const updateProfile = async (req, res) => {
-  const userId = req.user._id
+export const updateProfile = async (req: any, res: any) => {
+  const userId = req.user?._id
   try {
     const userData = req.body
     if (userData.role) {
@@ -185,12 +187,12 @@ export const updateProfile = async (req, res) => {
     // Update user data with userId
     await User.findByIdAndUpdate(userId, userData)
 
-    res.status(200).send('Cập nhập thông tin cá nhân thành công')
+    res.status(HttpStatusCode.Ok).send('Cập nhập thông tin cá nhân thành công')
   } catch (error) {
-    res.status(500).send('Internal Server Error')
+    res.status(HttpStatusCode.InternalServerError).send('Internal Server Error')
   }
 }
-export const getUserInfo = async (req, res) => {
+export const getUserInfo = async (req: any, res: any) => {
   const userId = req.user._id
   try {
     // Find user by _id and exclude _id and password fields
@@ -200,13 +202,13 @@ export const getUserInfo = async (req, res) => {
       return res.status(404).send('User not found.')
     }
 
-    res.status(200).json(user)
+    res.status(HttpStatusCode.Ok).json(user)
   } catch (error) {
     console.error('Error retrieving user information:', error)
-    res.status(500).send('Internal Server Error')
+    res.status(HttpStatusCode.InternalServerError).send('Internal Server Error')
   }
 }
-export const getUserOrders = async (req, res) => {
+export const getUserOrders = async (req: any, res: any) => {
   const userId = req.user._id
   try {
     // Find user by _id and exclude _id and password fields
@@ -216,50 +218,50 @@ export const getUserOrders = async (req, res) => {
       return res.status(404).send('User not found.')
     }
 
-    res.status(200).json(user)
+    res.status(HttpStatusCode.Ok).json(user)
   } catch (error) {
     console.error('Error retrieving user information:', error)
-    res.status(500).send('Internal Server Error')
+    res.status(HttpStatusCode.InternalServerError).send('Internal Server Error')
   }
 }
-export const lostPassword = async (req, res) => {
+export const lostPassword = async (req: Request, res: Response) => {
   const { email } = req.body
   const user = await User.findOne({ email: email })
-  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET
-  const accessTokenLife = process.env.ACCESS_TOKEN_LIFE
+  const accessTokenSecret = ACCESS_TOKEN_SECRET
+  const accessTokenLife = ACCESS_TOKEN_LIFE
 
   if (user) {
     // Tạo reset token mới
     const dataForResetToken = {
-      _id: user._id,
+      _id: user._id
     }
     // Tạo mã xác nhận và lưu vào user
     const newResetToken = jwt.sign(dataForResetToken, accessTokenSecret, {
-      expiresIn: accessTokenLife,
+      expiresIn: accessTokenLife
     })
     // user.resetToken = newResetToken
     await User.findOneAndUpdate({ email: email }, { resetToken: newResetToken })
     sendResetEmail(email, newResetToken)
 
-    res.status(200).json('Email đặt lại mật khẩu đã được gửi.')
+    res.status(HttpStatusCode.Ok).json('Email đặt lại mật khẩu đã được gửi.')
   } else {
     res.status(401).json('Email không tồn tại')
   }
 }
-const sendResetEmail = (email, resetToken) => {
+const sendResetEmail = (email: string, resetToken: string) => {
   const mailOptions = {
     from: 'Ziggy',
     to: email,
     subject: 'Đặt lại mật khẩu',
-    text: `Vào đường dẫn này để đặt lại mật khẩu: ${process.env.RESET_URL}?query=${resetToken}`,
+    text: `Vào đường dẫn này để đặt lại mật khẩu: ${process.env.RESET_URL}?query=${resetToken}`
   }
 
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS,
-    },
+      pass: process.env.GMAIL_PASS
+    }
   })
 
   transporter.sendMail(mailOptions, (error, info) => {
@@ -270,24 +272,24 @@ const sendResetEmail = (email, resetToken) => {
     }
   })
 }
-export const checkResetToken = async (req, res) => {
+export const checkResetToken = async (req: Request, res: Response) => {
   let token = req.query?.query
 
   if (token == null) {
-    return res.status(500).json('Invalid or expired token')
+    return res.status(HttpStatusCode.InternalServerError).json('Invalid or expired token')
   }
 
   const user = await User.findOne({ resetToken: token })
   if (user) {
     // Hiển thị form đặt lại mật khẩu
-    res.status(200).json(user.email)
+    res.status(HttpStatusCode.Ok).json(user.email)
   } else {
-    res.status(500).json('Invalid or expired token')
+    res.status(HttpStatusCode.InternalServerError).json('Invalid or expired token')
   }
 }
 
 // Route xử lý đặt lại mật khẩu
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req: Request, res: Response) => {
   const resetToken = req.body.token
   const newPassword = req.body.newPassword
   const user = await User.findOne({ resetToken: resetToken })
@@ -296,10 +298,7 @@ export const resetPassword = async (req, res) => {
     // Cập nhật mật khẩu và xóa mã xác nhận
     const hashPassword = bcrypt.hashSync(newPassword, SALT_ROUNDS)
 
-    await User.findOneAndUpdate(
-      { resetToken: resetToken },
-      { resetToken: null, password: hashPassword },
-    )
+    await User.findOneAndUpdate({ resetToken: resetToken }, { resetToken: null, password: hashPassword })
     res.send('Password reset successful')
   } else {
     res.send('Invalid or expired token')

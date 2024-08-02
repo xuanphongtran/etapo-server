@@ -1,6 +1,6 @@
+import { getCart, getWishlist, updateCart, updateWishlist } from '@/controllers/cart.controller'
+import authenticate from '@/middleware/auth.middleware'
 import express from 'express'
-import { getCart, getWishlist, updateCart, updateWishlist } from '../controllers/cart.js'
-import { authenticate } from '../middleware/auth.js'
 
 const router = express.Router()
 
