@@ -3,10 +3,10 @@ name: Build Express Application
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -24,14 +24,11 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Init Prisma
-        run: npx prisma migrate dev --name init
-
       - name: Run Lint
         run: npm run lint
 
       - name: Run Build
-        run: npm run build
+        run: npm start
 
       # - name: Run start
       #   run: npm start

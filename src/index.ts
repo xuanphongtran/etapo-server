@@ -6,11 +6,21 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import { Server } from 'socket.io'
 import connectDatabase from './configs/db.config'
+import { HttpStatusCode } from './constants/httpStatusCode.enum'
+import authRoutes from './routes/auth.routes'
+import cartRoutes from './routes/cart.routes'
+import chatRoutes from './routes/chat.routes'
+import clientRoutes from './routes/client.routes'
+import generalRoutes from './routes/general.routes'
+import managementRoutes from './routes/management.routes'
+import paymentRoutes from './routes/payment.routes'
+import productRoutes from './routes/product.routes'
+import salesRoutes from './routes/sales.routes'
 
 //configuration
 dotenv.config()
 const app = express()
-const port = process.env.PORT || HttpStatusCode.InternalServerError0
+const port = process.env.PORT || HttpStatusCode.InternalServerError
 
 connectDatabase()
 
@@ -21,6 +31,14 @@ app.use(morgan('common'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors())
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.status(HttpStatusCode.Ok).json({
+    status: 'UP',
+    timestamp: new Date().toISOString()
+  })
+})
 
 const server = app.listen(port, () => {
   console.log('Server is running on port', port)
