@@ -2,17 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
     "lint": "eslint src",
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "build": "tsup",
+    "build": "rimraf dist && tsc && tsc-alias",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "type": "module",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
@@ -44,7 +43,7 @@
     "@types/nodemailer": "^6.4.15",
     "eslint": "^8.38.0",
     "prettier": "^3.3.3",
-    "tsup": "^8.2.4",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4"
   }
 }

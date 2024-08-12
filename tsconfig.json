@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "outDir": "dist"
   }
 }
