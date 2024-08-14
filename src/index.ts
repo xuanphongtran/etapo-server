@@ -20,7 +20,7 @@ import salesRoutes from './routes/sales.routes'
 //configuration
 dotenv.config()
 const app = express()
-const port = process.env.PORT || HttpStatusCode.InternalServerError
+const port = process.env.PORT || 5000
 
 connectDatabase()
 
