@@ -5,11 +5,11 @@ const categorySchema = new mongoose.Schema(
     name: { type: String, required: true },
     parent: { type: mongoose.Types.ObjectId, ref: 'Category' },
     image: String,
-    level: Number,
+    level: Number
   },
   {
-    timestamps: true,
-  },
+    timestamps: true
+  }
 )
 const Category = mongoose.model('Category', categorySchema)
 

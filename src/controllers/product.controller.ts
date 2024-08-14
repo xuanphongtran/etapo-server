@@ -86,8 +86,8 @@ export const createProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await Product.findByIdAndRemove(id)
-    await ProductStat.findOneAndRemove({ productId: id })
+    await Product.findByIdAndDelete(id)
+    await ProductStat.findOneAndDelete({ productId: id })
     res.status(HttpStatusCode.Ok).send('Success')
   } catch (error) {
     res.status(404).json({ message: error })
@@ -179,7 +179,7 @@ export const updateProperty = async (req: Request, res: Response) => {
 export const deleteProperty = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await Property.findByIdAndRemove(id)
+    await Property.findByIdAndDelete(id)
     res.status(HttpStatusCode.Ok).send('Success')
   } catch (error) {
     res.status(HttpStatusCode.InternalServerError).json({ message: error })

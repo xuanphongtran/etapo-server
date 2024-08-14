@@ -30,7 +30,7 @@ export const getCategories = async (req: Request, res: Response) => {
 
     const total = await Category.countDocuments({ name: { $regex: search, $options: 'i' } })
     const categories = await Promise.all(
-      cat.map(async (category) => {
+      cat.map(async (category: any) => {
         const productCount = await Product.countDocuments({ category: category._id })
         return { ...category.toObject(), productCount }
       })
@@ -81,7 +81,7 @@ export const updateCategories = async (req: Request, res: Response) => {
 export const deleteCategories = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await Category.findByIdAndRemove(id)
+    await Category.findByIdAndDelete(id)
     res.status(HttpStatusCode.Ok).send('Success')
   } catch (error) {
     res.status(HttpStatusCode.InternalServerError).json({ message: error })
@@ -120,7 +120,7 @@ export const getBrands = async (req: Request, res: Response) => {
     const total = await Order.countDocuments({ name: { $regex: search, $options: 'i' } })
 
     const brands = await Promise.all(
-      bra.map(async (brand) => {
+      bra.map(async (brand: any) => {
         const productCount = await Product.countDocuments({ brand: brand._id })
         return { ...brand.toObject(), productCount }
       })
@@ -164,7 +164,7 @@ export const updateBrand = async (req: Request, res: Response) => {
 export const deleteBrand = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await Brand.findByIdAndRemove(id)
+    await Brand.findByIdAndDelete(id)
     res.status(HttpStatusCode.Ok).send('Success')
   } catch (error) {
     res.status(HttpStatusCode.InternalServerError).json({ message: error })
