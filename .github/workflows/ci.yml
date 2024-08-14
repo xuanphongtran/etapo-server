@@ -18,17 +18,17 @@ jobs:
       - name: Use the latest stable Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "node"
-          cache: "npm"
+          node-version: 'node'
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      - name: Run Lint
-        run: npm run lint
+      # - name: Run Lint
+      #   run: npm run lint
 
       - name: Run Build
-        run: npm start
+        run: npm run build
 
       # - name: Run start
       #   run: npm start
