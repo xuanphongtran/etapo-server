@@ -2443,9 +2443,9 @@ tsc-alias@^1.8.10:
     plimit-lit "^1.2.6"
 
 tsx@^4.16.5:
-  version "4.19.3"
-  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.19.3.tgz#2bdbcb87089374d933596f8645615142ed727666"
-  integrity sha512-4H8vUNGNjQ4V2EOoGw005+c+dGuPSnhpPBPHBtsZdGZBk/iJb4kguGlPWaZTZ3q5nMtFOEsY0nRDlh9PJyd6SQ==
+  version "4.20.6"
+  resolved "https://registry.yarnpkg.com/tsx/-/tsx-4.20.6.tgz#8fb803fd9c1f70e8ccc93b5d7c5e03c3979ccb2e"
+  integrity sha512-ytQKuwgmrrkDTFP4LjR0ToE2nqgy886GpvRSpU0JAnrdBYppuY5rLkRUYPU1yCryb24SsKBTL/hlDQAEFVwtZg==
   dependencies:
     esbuild "~0.25.0"
     get-tsconfig "^4.7.5"
